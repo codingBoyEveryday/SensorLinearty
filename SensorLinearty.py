@@ -1,11 +1,7 @@
 #!/usr/bin/python
 import xlrd
 import matplotlib.pyplot as plt
-import math
 import numpy as np
-import pylab
-
-# from numpy import *
 
 
 class SensorLinearty():
@@ -14,9 +10,6 @@ class SensorLinearty():
 
         self.required_data_time = []
         self.required_data_angle = []
-        self.new_required_data_time = []
-        self.new_required_data_angle = []
-        self.matrix = []
         self.startPoint = 0
         self.endPoint = 0
 
@@ -43,283 +36,197 @@ class SensorLinearty():
             if abs((self.required_data_angle[i+1]-self.required_data_angle[i]))>=3:
                 self.startPoint = i
                 break
-        self.new_required_data_time[:] = self.required_data_time[self.startPoint:]
+        self.required_data_time[:] = self.required_data_time[self.startPoint:]
         # print self.new_required_data_time
-        self.new_required_data_angle[:] = self.required_data_angle[self.startPoint:]
-        # print self.new_required_data_angle
-
-    # def remove_useless_timerange(self):
-    #     for i in range(len(self.new_required_data_angle)):
-    #         if abs((self.required_data_angle[i+1]-self.required_data_angle[i]))==0:
-    #             self.endPoint = i
-    #             break
-    #     self.new_required_data_time[:] = self.required_data_time[0:self.endPoint]
-        # print self.new_required_data_time
-        # self.new_required_data_angle[:] = self.required_data_angle[0:self.endPoint]
+        self.required_data_angle[:] = self.required_data_angle[self.startPoint:]
         # print self.new_required_data_angle
 
     def ajust_angle(self):
-        for i in range(len(self.new_required_data_angle)):
-            if (self.new_required_data_angle[i]-self.new_required_data_angle[i-1]) > 250:
-                self.new_required_data_angle[i] = self.new_required_data_angle[i] - 360
-            elif (self.new_required_data_angle[i]-self.new_required_data_angle[i-1]) < -250:
-                self.new_required_data_angle[i] = self.new_required_data_angle[i] + 360
+        for i in range(len(self.required_data_angle)):
+            if (self.required_data_angle[i]-self.required_data_angle[i-1]) > 250:
+                self.required_data_angle[i] = self.required_data_angle[i] - 360
+            elif (self.required_data_angle[i]-self.required_data_angle[i-1]) < -250:
+                self.required_data_angle[i] = self.required_data_angle[i] + 360
 
-    def plot_figure(self):
-        plt.plot(self.new_required_data_time, self.new_required_data_angle)
-        plt.show()
+    def adjust_stop_time(self):
+        counter = 0
+        for i in range(len(self.required_data_angle)):
+            if abs(self.required_data_angle[i+1] - self.required_data_angle[i]) < 2:
+                counter = counter + 1
+                if counter > 5:
+                    self.endPoint = i
+                    break
+            else:
+                counter = 0
+        self.required_data_time[:] = self.required_data_time[:self.endPoint]
+        self.required_data_angle[:] = self.required_data_angle[:self.endPoint]
 
+    def shift_start_time(self, min_time):
+        shift_time_value = self.required_data_time[0] - min_time
+        for i in range(len(self.required_data_time)):
+            self.required_data_time[i] = self.required_data_time[i] - shift_time_value
 
-    def acc_rebuild(self):
-        pass
+    def shift_start_angle(self, min_angle):
+        shift_angle_value = self.required_data_angle[0] - min_angle
+        for i in range(len(self.required_data_angle)):
+            self.required_data_angle[i] = self.required_data_angle[i] - shift_angle_value
 
+    def make_golden_sensor(self, acc_time, acc_angle, golden_sensor):
+        index = []
+        for i in range(len(self.required_data_time)):
+            diff = []
+            for j in range(len(acc_time)):
+                diff.append(abs(acc_time[j] - self.required_data_time[i]))
+            index.append(diff.index(min(diff)))
+        for i in range(len(self.required_data_time)):
+            golden_sensor.append(acc_angle[index[i]])
 
+    def make_fit_function(self, golden_sensor, fit, r):
+        slop, y = np.polyfit(golden_sensor, self.required_data_angle, 1)
+        slop = float(slop)
+        y = float(y)
+        SStot_all = []
+        SSres_all = []
 
+        mean_1 = np.mean(self.required_data_angle)
+        # print mean_1
 
+        for i in golden_sensor:
+            fit.append(slop * i + y)
 
-
-
+        for i in range(len(golden_sensor)):
+            SStot_all.append((self.required_data_angle[i] - mean_1) ** 2)
+            SSres_all.append((self.required_data_angle[i] - fit[i]) ** 2)
+        SStot = sum(SStot_all)
+        SSres = sum(SSres_all)
+        r = 1 - (SSres / SStot)
+        print r
 
 def main():
     mechineSensor_testPathFile = "C:/Users/HPuser/Desktop/sensorLinearty/machine.xlsx"
     accSensor_testPathFile = "C:/Users/HPuser/Desktop/sensorLinearty/acc.xlsx"
-
-    example_1 = SensorLinearty()
-    example_2 = SensorLinearty()
-    example_3 = SensorLinearty()
-    example_4 = SensorLinearty()
-    example_5 = SensorLinearty()
+    machine_1 = SensorLinearty()
+    machine_2 = SensorLinearty()
+    machine_3 = SensorLinearty()
+    machine_4 = SensorLinearty()
+    machine_5 = SensorLinearty()
     acc = SensorLinearty()
-
-    testWorksheet_1 = example_1.open_data_file(mechineSensor_testPathFile)
-    testWorksheet_2 = example_2.open_data_file(mechineSensor_testPathFile)
-    testWorksheet_3 = example_3.open_data_file(mechineSensor_testPathFile)
-    testWorksheet_4 = example_4.open_data_file(mechineSensor_testPathFile)
-    testWorksheet_5 = example_5.open_data_file(mechineSensor_testPathFile)
-    testWorksheet_acc = acc.open_data_file(accSensor_testPathFile)
-
-
-
-    example_1.get_data(testWorksheet_1, 1, 3)
-    example_1.adjust_start_time()
-    example_1.ajust_angle()
-    # example_1.plot_figure()
-
-    example_2.get_data(testWorksheet_2, 5, 7)
-    example_2.adjust_start_time()
-    example_2.ajust_angle()
-    # example_2.plot_figure()
-
-    example_3.get_data(testWorksheet_3, 9, 11)
-    example_3.adjust_start_time()
-    example_3.ajust_angle()
-    # example_3.plot_figure()
-
-    example_4.get_data(testWorksheet_4, 13, 15)
-    example_4.adjust_start_time()
-    example_4.ajust_angle()
-    # example_4.plot_figure()
-
-    example_5.get_data(testWorksheet_5, 17, 19)
-    example_5.adjust_start_time()
-    example_5.ajust_angle()
-    # example_5.plot_figure()
-
-
-    acc.get_data(testWorksheet_acc,8, 14)
-    acc.adjust_start_time()
-    acc.ajust_angle()
-    # acc.plot_figure()
-
-
-######### ajust the start point of time #################
-    min_start_time_point = min(example_1.new_required_data_time[0], example_2.new_required_data_time[0],
-                               example_3.new_required_data_time[0], example_4.new_required_data_time[0],
-                               example_5.new_required_data_time[0], acc.new_required_data_time[0])
-    # print min_start_time_point
-
-    t1 = example_1.new_required_data_time[0] - min_start_time_point
-    t2 = example_2.new_required_data_time[0] - min_start_time_point
-    t3 = example_3.new_required_data_time[0] - min_start_time_point
-    t4 = example_4.new_required_data_time[0] - min_start_time_point
-    t5 = example_5.new_required_data_time[0] - min_start_time_point
-    t_acc = acc.new_required_data_time[0] - min_start_time_point
-
-    for i in range(len(example_1.new_required_data_time)):
-        example_1.new_required_data_time[i] = example_1.new_required_data_time[i] - t1
-    for i in range(len(example_2.new_required_data_time)):
-        example_2.new_required_data_time[i] = example_2.new_required_data_time[i] - t2
-    for i in range(len(example_3.new_required_data_time)):
-        example_3.new_required_data_time[i] = example_3.new_required_data_time[i] - t3
-    for i in range(len(example_4.new_required_data_time)):
-        example_4.new_required_data_time[i] = example_4.new_required_data_time[i] - t4
-    for i in range(len(example_5.new_required_data_time)):
-        example_5.new_required_data_time[i] = example_5.new_required_data_time[i] - t5
-    for i in range(len(acc.new_required_data_time)):
-        acc.new_required_data_time[i] = acc.new_required_data_time[i] - t_acc
-
-#########################################################
-
-#
-
-####### adjust the start point in angle #################
-
-    min_start_angle_point = min(example_1.new_required_data_angle[0], example_2.new_required_data_angle[0],
-                               example_3.new_required_data_angle[0], example_4.new_required_data_angle[0],
-                               example_5.new_required_data_angle[0], acc.new_required_data_angle[0])
-
-    a1 = example_1.new_required_data_angle[0] - min_start_angle_point
-    a2 = example_2.new_required_data_angle[0] - min_start_angle_point
-    a3 = example_3.new_required_data_angle[0] - min_start_angle_point
-    a4 = example_4.new_required_data_angle[0] - min_start_angle_point
-    a5 = example_5.new_required_data_angle[0] - min_start_angle_point
-    a_acc = acc.new_required_data_angle[0] - min_start_angle_point
-
-    for i in range(len(example_1.new_required_data_angle)):
-        example_1.new_required_data_angle[i] = example_1.new_required_data_angle[i] - a1
-
-    for i in range(len(example_2.new_required_data_angle)):
-        example_2.new_required_data_angle[i] = example_2.new_required_data_angle[i] - a2
-
-    for i in range(len(example_3.new_required_data_angle)):
-        example_3.new_required_data_angle[i] = example_3.new_required_data_angle[i] - a3
-
-    for i in range(len(example_4.new_required_data_angle)):
-        example_4.new_required_data_angle[i] = example_4.new_required_data_angle[i] - a4
-
-    for i in range(len(example_5.new_required_data_angle)):
-        example_5.new_required_data_angle[i] = example_5.new_required_data_angle[i] - a5
-
-    for i in range(len(acc.new_required_data_angle)):
-        acc.new_required_data_angle[i] = acc.new_required_data_angle[i] - a_acc
-
-##########################################################################
-
-#
-
-####### rebuild the accelermeter for each machine sensor #################
     golden_sensor_1 = []
     golden_sensor_2 = []
     golden_sensor_3 = []
     golden_sensor_4 = []
     golden_sensor_5 = []
+    fit_1 = []
+    fit_2 = []
+    fit_3 = []
+    fit_4 = []
+    fit_5 = []
+    r_1 = r_2 = r_3 = r_4 = r_5 = 0
 
-    index_1 = []
-    index_2 = []
-    index_3 = []
-    index_4 = []
-    index_5 = []
+    testWorksheet_1 = machine_1.open_data_file(mechineSensor_testPathFile)
+    testWorksheet_2 = machine_2.open_data_file(mechineSensor_testPathFile)
+    testWorksheet_3 = machine_3.open_data_file(mechineSensor_testPathFile)
+    testWorksheet_4 = machine_4.open_data_file(mechineSensor_testPathFile)
+    testWorksheet_5 = machine_5.open_data_file(mechineSensor_testPathFile)
+    testWorksheet_acc = acc.open_data_file(accSensor_testPathFile)
 
-    for i in range(len(example_1.new_required_data_time)):
-        diff_1 = []
-        for j in range(len(acc.new_required_data_time)):
-            diff_1.append(abs(acc.new_required_data_time[j]-example_1.new_required_data_time[i]))
-        index_1.append(diff_1.index(min(diff_1)))
-    for i in range(len(example_1.new_required_data_time)):
-        golden_sensor_1.append(acc.new_required_data_angle[index_1[i]])
-    # print golden_sensor_1
+    machine_1.get_data(testWorksheet_1, 1, 3)
+    machine_1.adjust_start_time()
+    machine_1.ajust_angle()
+    machine_1.adjust_stop_time()
 
-    for i in range(len(example_2.new_required_data_time)):
-        diff_2 = []
-        for j in range(len(acc.new_required_data_time)):
-            diff_2.append(abs(acc.new_required_data_time[j]-example_2.new_required_data_time[i]))
-        index_2.append(diff_2.index(min(diff_2)))
-    for i in range(len(example_2.new_required_data_time)):
-        golden_sensor_2.append(acc.new_required_data_angle[index_2[i]])
-    # print golden_sensor_2
+    machine_2.get_data(testWorksheet_2, 5, 7)
+    machine_2.adjust_start_time()
+    machine_2.ajust_angle()
+    machine_2.adjust_stop_time()
 
-    for i in range(len(example_3.new_required_data_time)):
-        diff_3 = []
-        for j in range(len(acc.new_required_data_time)):
-            diff_3.append(abs(acc.new_required_data_time[j]-example_3.new_required_data_time[i]))
-        index_3.append(diff_3.index(min(diff_3)))
-    for i in range(len(example_3.new_required_data_time)):
-        golden_sensor_3.append(acc.new_required_data_angle[index_3[i]])
-    # print golden_sensor_3
+    machine_3.get_data(testWorksheet_3, 9, 11)
+    machine_3.adjust_start_time()
+    machine_3.ajust_angle()
+    machine_3.adjust_stop_time()
 
-    for i in range(len(example_4.new_required_data_time)):
-        diff_4 = []
-        for j in range(len(acc.new_required_data_time)):
-            diff_4.append(abs(acc.new_required_data_time[j]-example_4.new_required_data_time[i]))
-        index_4.append(diff_4.index(min(diff_4)))
-    for i in range(len(example_4.new_required_data_time)):
-        golden_sensor_4.append(acc.new_required_data_angle[index_4[i]])
-    # print golden_sensor_4
+    machine_4.get_data(testWorksheet_4, 13, 15)
+    machine_4.adjust_start_time()
+    machine_4.ajust_angle()
+    machine_4.adjust_stop_time()
 
-    for i in range(len(example_5.new_required_data_time)):
-        diff_5 = []
-        for j in range(len(acc.new_required_data_time)):
-            diff_5.append(abs(acc.new_required_data_time[j]-example_5.new_required_data_time[i]))
-        index_5.append(diff_5.index(min(diff_5)))
-    for i in range(len(example_5.new_required_data_time)):
-        golden_sensor_5.append(acc.new_required_data_angle[index_5[i]])
-    # print golden_sensor_5
+    machine_5.get_data(testWorksheet_5, 17, 19)
+    machine_5.adjust_start_time()
+    machine_5.ajust_angle()
+    machine_5.adjust_stop_time()
+
+    acc.get_data(testWorksheet_acc,8, 14)
+    acc.adjust_start_time()
+    acc.ajust_angle()
+    acc.adjust_stop_time()
+######### ajust the start point of time #################
+    min_start_time_point = min(machine_1.required_data_time[0], machine_2.required_data_time[0],
+                               machine_3.required_data_time[0], machine_4.required_data_time[0],
+                               machine_5.required_data_time[0], acc.required_data_time[0])
+
+    machine_1.shift_start_time(min_start_time_point)
+    machine_2.shift_start_time(min_start_time_point)
+    machine_3.shift_start_time(min_start_time_point)
+    machine_4.shift_start_time(min_start_time_point)
+    machine_5.shift_start_time(min_start_time_point)
+    acc.shift_start_time(min_start_time_point)
+
+####### adjust the start point in angle #################
+    min_start_angle_point = min(machine_1.required_data_angle[0], machine_2.required_data_angle[0],
+                               machine_3.required_data_angle[0], machine_4.required_data_angle[0],
+                               machine_5.required_data_angle[0], acc.required_data_angle[0])
+
+    machine_1.shift_start_angle(min_start_angle_point)
+    machine_2.shift_start_angle(min_start_angle_point)
+    machine_3.shift_start_angle(min_start_angle_point)
+    machine_4.shift_start_angle(min_start_angle_point)
+    machine_5.shift_start_angle(min_start_angle_point)
+    acc.shift_start_angle(min_start_angle_point)
+
+######################### make golden sensor for machine 1 ###########################
+    machine_1.make_golden_sensor(acc.required_data_time,acc.required_data_angle, golden_sensor_1)
+    machine_2.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_2)
+    machine_3.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_3)
+    machine_4.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_4)
+    machine_5.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_5)
+
+######################### make fit function for the plot and calculate the r^2 for machine 1 #################################
+
+    # machine_1.make_fit_function(golden_sensor_1, fit_1, r_1)
+    machine_2.make_fit_function(golden_sensor_2, fit_2, r_2)
+    # machine_3.make_fit_function(golden_sensor_3, fit_3, r_3)
+    # machine_4.make_fit_function(golden_sensor_4, fit_4, r_4)
+    # machine_5.make_fit_function(golden_sensor_5, fit_5, r_5)
+
+
     ################################################################
 
-    # plt.plot(example_1.new_required_data_time, example_1.new_required_data_angle, 'r')
-    # plt.plot(example_2.new_required_data_time, example_2.new_required_data_angle, 'g')
-    # plt.plot(example_3.new_required_data_time, example_3.new_required_data_angle, 'b')
-    # plt.plot(example_4.new_required_data_time, example_4.new_required_data_angle, 'y')
-    # plt.plot(example_5.new_required_data_time, example_5.new_required_data_angle, 'm')
-    # plt.plot(acc.new_required_data_time, acc.new_required_data_angle, 'k')
+    # plt.plot(machine_1.required_data_time, machine_1.required_data_angle, 'r')
+    # plt.plot(machine_2.required_data_time, machine_2.required_data_angle, 'g')
+    # plt.plot(machine_3.required_data_time, machine_3.required_data_angle, 'b')
+    # plt.plot(machine_4.required_data_time, machine_4.required_data_angle, 'y')
+    # plt.plot(machine_5.required_data_time, machine_5.required_data_angle, 'm')
+    # plt.plot(acc.required_data_time, acc.required_data_angle, 'k')
 
-    plt.scatter(golden_sensor_1, example_1.new_required_data_angle, marker='*', color='r')
+    # plt.scatter(golden_sensor_1, machine_1.required_data_angle, marker='*', color='r')
     # plt.show()
-    # plt.scatter(golden_sensor_2, example_2.new_required_data_angle, marker='*', color='g')
+    plt.scatter(golden_sensor_2, machine_2.required_data_angle, marker='*', color='g')
     # plt.show()
-    # plt.scatter(golden_sensor_3, example_3.new_required_data_angle, marker='*', color='b')
+    # plt.scatter(golden_sensor_3, machine_3.required_data_angle, marker='*', color='b')
     # plt.show()
-    # plt.scatter(golden_sensor_4, example_4.new_required_data_angle, marker='*', color='y')
+    # plt.scatter(golden_sensor_4, machine_4.required_data_angle, marker='*', color='y')
     # plt.show()
-    # plt.scatter(golden_sensor_5, example_5.new_required_data_angle, marker='*', color='m')
+    # plt.scatter(golden_sensor_5, machine_5.required_data_angle, marker='*', color='m')
     # plt.show()
 
-###########################################################################################3
+    # plt.plot(golden_sensor_1, fit_1)
+    plt.plot(golden_sensor_2, fit_2)
+    # plt.plot(golden_sensor_3, fit_3)
+    # plt.plot(golden_sensor_4, fit_4)
+    # plt.plot(golden_sensor_5, fit_5)
 
-    slop_1, y_1 = np.polyfit(golden_sensor_1, example_1.new_required_data_angle, 1)
-    slop_1 = float(slop_1)
-    y_1 = float(y_1)
-    fit_1 = []
-    SStot_all_1 = []
-    SSres_all_1 = []
-    SStot_1 = 0
-    SSres_1 = 0
+    plt.show()
 
-    mean_1 = np.mean(example_1.new_required_data_angle)
-    print mean_1
-
-    for i in golden_sensor_1:
-        fit_1.append(slop_1*i + y_1)
-    plt.plot(golden_sensor_1,fit_1)
-
-    for i in range(len(golden_sensor_1)):
-        SStot_all_1.append((example_1.new_required_data_angle[i] - mean_1)**2)
-        SSres_all_1.append((example_1.new_required_data_angle[i] - fit_1[i])**2)
-    SStot_1 = sum(SStot_all_1)
-    SSres_1 = sum(SSres_all_1)
-    r = 1 - (SSres_1/SStot_1)
-    print r
-
-
-
-
-    # fit_2= np.polyfit(golden_sensor_2, example_2.new_required_data_angle, 1)
-    # fit_fn_2 = np.poly1d(fit_2)
-    # print fit_fn_2
-
-    # fit_3 = np.polyfit(golden_sensor_3, example_3.new_required_data_angle, 1)
-    # fit_fn_3 = np.poly1d(fit_3)
-    # print fit_fn_3
-
-    # fit_4 = np.polyfit(golden_sensor_4, example_4.new_required_data_angle, 1)
-    # fit_fn_4 = np.poly1d(fit_4)
-    # print fit_fn_4
-
-    # fit_5 = np.polyfit(golden_sensor_5, example_5.new_required_data_angle, 1)
-    # fit_fn_5 = np.poly1d(fit_5)
-    # print fit_fn_5
-
-    # plt.show()
 
 if __name__ == "__main__":
     main()
