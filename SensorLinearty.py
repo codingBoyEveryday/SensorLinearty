@@ -1,9 +1,9 @@
 #!/usr/bin/python
 import xlrd
 import matplotlib.pyplot as plt
-# import matplotlib.pylab as pl
 import math
-import numpy
+import numpy as np
+import pylab
 
 # from numpy import *
 
@@ -17,10 +17,6 @@ class SensorLinearty():
         self.new_required_data_time = []
         self.new_required_data_angle = []
         self.matrix = []
-
-
-
-
         self.startPoint = 0
         self.endPoint = 0
 
@@ -203,25 +199,61 @@ def main():
 
 ####### rebuild the accelermeter for each machine sensor #################
     golden_sensor_1 = []
-    index_1 = []
-    for i in range(len(example_1.new_required_data_time)):
-        diff = []
-        for j in range(len(acc.new_required_data_time)):
-            diff.append(abs(acc.new_required_data_time[j]-example_1.new_required_data_time[i]))
-        index_1.append(diff.index(min(diff)))
+    golden_sensor_2 = []
+    golden_sensor_3 = []
+    golden_sensor_4 = []
+    golden_sensor_5 = []
 
+    index_1 = []
+    index_2 = []
+    index_3 = []
+    index_4 = []
+    index_5 = []
+
+    for i in range(len(example_1.new_required_data_time)):
+        diff_1 = []
+        for j in range(len(acc.new_required_data_time)):
+            diff_1.append(abs(acc.new_required_data_time[j]-example_1.new_required_data_time[i]))
+        index_1.append(diff_1.index(min(diff_1)))
     for i in range(len(example_1.new_required_data_time)):
         golden_sensor_1.append(acc.new_required_data_angle[index_1[i]])
-        # print index_1[i]
-        # print acc.new_required_data_angle[index_1[i]]
-    print golden_sensor_1
+    # print golden_sensor_1
 
-        # acc.new_required_data_angle[i] = acc.new_required_data_angle[index]
-        #
-        # print example_1.matrix
-        # print min_index
+    for i in range(len(example_2.new_required_data_time)):
+        diff_2 = []
+        for j in range(len(acc.new_required_data_time)):
+            diff_2.append(abs(acc.new_required_data_time[j]-example_2.new_required_data_time[i]))
+        index_2.append(diff_2.index(min(diff_2)))
+    for i in range(len(example_2.new_required_data_time)):
+        golden_sensor_2.append(acc.new_required_data_angle[index_2[i]])
+    # print golden_sensor_2
 
+    for i in range(len(example_3.new_required_data_time)):
+        diff_3 = []
+        for j in range(len(acc.new_required_data_time)):
+            diff_3.append(abs(acc.new_required_data_time[j]-example_3.new_required_data_time[i]))
+        index_3.append(diff_3.index(min(diff_3)))
+    for i in range(len(example_3.new_required_data_time)):
+        golden_sensor_3.append(acc.new_required_data_angle[index_3[i]])
+    # print golden_sensor_3
 
+    for i in range(len(example_4.new_required_data_time)):
+        diff_4 = []
+        for j in range(len(acc.new_required_data_time)):
+            diff_4.append(abs(acc.new_required_data_time[j]-example_4.new_required_data_time[i]))
+        index_4.append(diff_4.index(min(diff_4)))
+    for i in range(len(example_4.new_required_data_time)):
+        golden_sensor_4.append(acc.new_required_data_angle[index_4[i]])
+    # print golden_sensor_4
+
+    for i in range(len(example_5.new_required_data_time)):
+        diff_5 = []
+        for j in range(len(acc.new_required_data_time)):
+            diff_5.append(abs(acc.new_required_data_time[j]-example_5.new_required_data_time[i]))
+        index_5.append(diff_5.index(min(diff_5)))
+    for i in range(len(example_5.new_required_data_time)):
+        golden_sensor_5.append(acc.new_required_data_angle[index_5[i]])
+    # print golden_sensor_5
     ################################################################
 
     # plt.plot(example_1.new_required_data_time, example_1.new_required_data_angle, 'r')
@@ -231,10 +263,46 @@ def main():
     # plt.plot(example_5.new_required_data_time, example_5.new_required_data_angle, 'm')
     # plt.plot(acc.new_required_data_time, acc.new_required_data_angle, 'k')
 
-    plt.plot(golden_sensor_1, example_1.new_required_data_angle, linestyle='--',marker='*', color='r')
+    plt.scatter(golden_sensor_1, example_1.new_required_data_angle, marker='*', color='r')
+    # plt.show()
+    # plt.scatter(golden_sensor_2, example_2.new_required_data_angle, marker='*', color='g')
+    # plt.show()
+    # plt.scatter(golden_sensor_3, example_3.new_required_data_angle, marker='*', color='b')
+    # plt.show()
+    # plt.scatter(golden_sensor_4, example_4.new_required_data_angle, marker='*', color='y')
+    # plt.show()
+    # plt.scatter(golden_sensor_5, example_5.new_required_data_angle, marker='*', color='m')
+    # plt.show()
+
+###########################################################################################3
+
+    fit_1, y_1 = np.polyfit(golden_sensor_1, example_1.new_required_data_angle, 1)
+    fit_1 = float(fit_1)
+    y_1 = float(y_1)
+    y = []
+
+    for i in golden_sensor_1:
+        y.append(fit_1*i + y_1)
+    plt.plot(golden_sensor_1,y)
+
+    # fit_2= np.polyfit(golden_sensor_2, example_2.new_required_data_angle, 1)
+    # fit_fn_2 = np.poly1d(fit_2)
+    # print fit_fn_2
+
+    # fit_3 = np.polyfit(golden_sensor_3, example_3.new_required_data_angle, 1)
+    # fit_fn_3 = np.poly1d(fit_3)
+    # print fit_fn_3
+
+    # fit_4 = np.polyfit(golden_sensor_4, example_4.new_required_data_angle, 1)
+    # fit_fn_4 = np.poly1d(fit_4)
+    # print fit_fn_4
+
+    # fit_5 = np.polyfit(golden_sensor_5, example_5.new_required_data_angle, 1)
+    # fit_fn_5 = np.poly1d(fit_5)
+    # print fit_fn_5
 
     plt.show()
-    # pl.show()
+
 if __name__ == "__main__":
     main()
 
