@@ -276,14 +276,32 @@ def main():
 
 ###########################################################################################3
 
-    fit_1, y_1 = np.polyfit(golden_sensor_1, example_1.new_required_data_angle, 1)
-    fit_1 = float(fit_1)
+    slop_1, y_1 = np.polyfit(golden_sensor_1, example_1.new_required_data_angle, 1)
+    slop_1 = float(slop_1)
     y_1 = float(y_1)
-    y = []
+    fit_1 = []
+    SStot_all_1 = []
+    SSres_all_1 = []
+    SStot_1 = 0
+    SSres_1 = 0
+
+    mean_1 = np.mean(example_1.new_required_data_angle)
+    print mean_1
 
     for i in golden_sensor_1:
-        y.append(fit_1*i + y_1)
-    plt.plot(golden_sensor_1,y)
+        fit_1.append(slop_1*i + y_1)
+    plt.plot(golden_sensor_1,fit_1)
+
+    for i in range(len(golden_sensor_1)):
+        SStot_all_1.append((example_1.new_required_data_angle[i] - mean_1)**2)
+        SSres_all_1.append((example_1.new_required_data_angle[i] - fit_1[i])**2)
+    SStot_1 = sum(SStot_all_1)
+    SSres_1 = sum(SSres_all_1)
+    r = 1 - (SSres_1/SStot_1)
+    print r
+
+
+
 
     # fit_2= np.polyfit(golden_sensor_2, example_2.new_required_data_angle, 1)
     # fit_fn_2 = np.poly1d(fit_2)
@@ -301,7 +319,7 @@ def main():
     # fit_fn_5 = np.poly1d(fit_5)
     # print fit_fn_5
 
-    plt.show()
+    # plt.show()
 
 if __name__ == "__main__":
     main()
