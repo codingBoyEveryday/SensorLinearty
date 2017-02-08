@@ -9,8 +9,11 @@ class SensorLinearty():
     def __init__(self):
         self.required_data_time = []
         self.required_data_angle = []
+        self.golden_sensor = []
+        self.fit = []
         self.startPoint = 0
         self.endPoint = 0
+        self.r = 0
 
     def open_data_file(self, filePath):
         workbook = xlrd.open_workbook(filePath)
@@ -70,7 +73,7 @@ class SensorLinearty():
         for i in range(len(self.required_data_angle)):
             self.required_data_angle[i] = self.required_data_angle[i] - shift_angle_value
 
-    def make_golden_sensor(self, acc_time, acc_angle, golden_sensor):
+    def make_golden_sensor(self, acc_time, acc_angle):
         index = []
         for i in range(len(self.required_data_time)):
             diff = []
@@ -78,34 +81,36 @@ class SensorLinearty():
                 diff.append(abs(acc_time[j] - self.required_data_time[i]))
             index.append(diff.index(min(diff)))
         for i in range(len(self.required_data_time)):
-            golden_sensor.append(acc_angle[index[i]])
+            self.golden_sensor.append(acc_angle[index[i]])
 
-    def make_fit_function(self, golden_sensor, fit, r):
-        slop, y = np.polyfit(golden_sensor, self.required_data_angle, 1)
+    def make_fit_function(self):
+        slop, y = np.polyfit(self.golden_sensor, self.required_data_angle, 1)
         slop = float(slop)
         y = float(y)
         SStot_all = []
         SSres_all = []
-
         mean_1 = np.mean(self.required_data_angle)
-        # print mean_1
-
-        for i in golden_sensor:
-            fit.append(slop * i + y)
-
-        for i in range(len(golden_sensor)):
+        for i in self.golden_sensor:
+            self.fit.append(slop * i + y)
+        for i in range(len(self.golden_sensor)):
             SStot_all.append((self.required_data_angle[i] - mean_1) ** 2)
-            SSres_all.append((self.required_data_angle[i] - fit[i]) ** 2)
+            SSres_all.append((self.required_data_angle[i] - self.fit[i]) ** 2)
         SStot = sum(SStot_all)
         SSres = sum(SSres_all)
-        r = 1 - (SSres / SStot)
-        print r
+        self.r = 1 - (SSres / SStot)
+        print "The r square is: ", self.r
 
-    def plot_line_graph(self, axis_x, axis_y, line_color = 'k'):
-        plt.plot(axis_x, axis_y, color = line_color)
+    def plot_line_graph(self, line_color = 'k'):
+        plt.plot(self.golden_sensor, self.fit, color = line_color)
 
-    def plot_dot_graph(self, axis_x, axis_y, dot_marker = "*", dot_color = 'k'):
-        plt.scatter(axis_x, axis_y, marker = dot_marker, color = dot_color)
+    def plot_dot_graph(self, dot_marker = "*", dot_color = 'k'):
+        plt.scatter(self.golden_sensor, self.required_data_angle, marker = dot_marker, color = dot_color)
+
+    # def plot_line_graph(self, axis_x, axis_y, line_color = 'k'):
+    #     plt.plot(axis_x, axis_y, color = line_color)
+    #
+    # def plot_dot_graph(self, axis_x, axis_y, dot_marker = "*", dot_color = 'k'):
+    #     plt.scatter(axis_x, axis_y, marker = dot_marker, color = dot_color)
 
     def show_graph(self):
         plt.show()
@@ -119,17 +124,6 @@ def main():
     machine_4 = SensorLinearty()
     machine_5 = SensorLinearty()
     acc = SensorLinearty()
-    golden_sensor_1 = []
-    golden_sensor_2 = []
-    golden_sensor_3 = []
-    golden_sensor_4 = []
-    golden_sensor_5 = []
-    fit_1 = []
-    fit_2 = []
-    fit_3 = []
-    fit_4 = []
-    fit_5 = []
-    r_1 = r_2 = r_3 = r_4 = r_5 = 0
 
     testWorksheet_1 = machine_1.open_data_file(mechineSensor_testPathFile)
     testWorksheet_2 = machine_2.open_data_file(mechineSensor_testPathFile)
@@ -192,38 +186,26 @@ def main():
     acc.shift_start_angle(min_start_angle_point)
 
 ######################### make golden sensor for machine 1 ###########################
-    machine_1.make_golden_sensor(acc.required_data_time,acc.required_data_angle, golden_sensor_1)
-    machine_2.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_2)
-    machine_3.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_3)
-    machine_4.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_4)
-    machine_5.make_golden_sensor(acc.required_data_time, acc.required_data_angle, golden_sensor_5)
+    machine_1.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
+    machine_2.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
+    machine_3.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
+    machine_4.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
+    machine_5.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
 
 ######################### make fit function for the plot and calculate the r^2 for machine 1 #################################
-
-    machine_1.make_fit_function(golden_sensor_1, fit_1, r_1)
-    # machine_2.make_fit_function(golden_sensor_2, fit_2, r_2)
-    # machine_3.make_fit_function(golden_sensor_3, fit_3, r_3)
-    # machine_4.make_fit_function(golden_sensor_4, fit_4, r_4)
-    # machine_5.make_fit_function(golden_sensor_5, fit_5, r_5)
-
-
+    machine_1.make_fit_function()
+    machine_2.make_fit_function()
+    machine_3.make_fit_function()
+    machine_4.make_fit_function()
+    machine_5.make_fit_function()
 #########################  make graph of each machine sensor and the accelermeter ##############################################
-    machine_1.plot_line_graph(golden_sensor_1, fit_1)
-    machine_1.plot_dot_graph(golden_sensor_1, machine_1.required_data_angle, dot_color='g')
+    machine_1.plot_line_graph()
+    machine_1.plot_dot_graph(dot_color='g')
     machine_1.show_graph()
-
-
-
 ###########  test  ###################################################################################
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
 
 #########################  some original graph we can plot for reference ##############################################
 
