@@ -7,7 +7,6 @@ import numpy as np
 class SensorLinearty():
 
     def __init__(self):
-
         self.required_data_time = []
         self.required_data_angle = []
         self.startPoint = 0
@@ -102,6 +101,15 @@ class SensorLinearty():
         r = 1 - (SSres / SStot)
         print r
 
+    def plot_line_graph(self, axis_x, axis_y, line_color = 'k'):
+        plt.plot(axis_x, axis_y, color = line_color)
+
+    def plot_dot_graph(self, axis_x, axis_y, dot_marker = "*", dot_color = 'k'):
+        plt.scatter(axis_x, axis_y, marker = dot_marker, color = dot_color)
+
+    def show_graph(self):
+        plt.show()
+
 def main():
     mechineSensor_testPathFile = "C:/Users/HPuser/Desktop/sensorLinearty/machine.xlsx"
     accSensor_testPathFile = "C:/Users/HPuser/Desktop/sensorLinearty/acc.xlsx"
@@ -192,43 +200,55 @@ def main():
 
 ######################### make fit function for the plot and calculate the r^2 for machine 1 #################################
 
-    # machine_1.make_fit_function(golden_sensor_1, fit_1, r_1)
-    machine_2.make_fit_function(golden_sensor_2, fit_2, r_2)
+    machine_1.make_fit_function(golden_sensor_1, fit_1, r_1)
+    # machine_2.make_fit_function(golden_sensor_2, fit_2, r_2)
     # machine_3.make_fit_function(golden_sensor_3, fit_3, r_3)
     # machine_4.make_fit_function(golden_sensor_4, fit_4, r_4)
     # machine_5.make_fit_function(golden_sensor_5, fit_5, r_5)
 
 
-    ################################################################
+#########################  make graph of each machine sensor and the accelermeter ##############################################
+    machine_1.plot_line_graph(golden_sensor_1, fit_1)
+    machine_1.plot_dot_graph(golden_sensor_1, machine_1.required_data_angle, dot_color='g')
+    machine_1.show_graph()
 
-    # plt.plot(machine_1.required_data_time, machine_1.required_data_angle, 'r')
-    # plt.plot(machine_2.required_data_time, machine_2.required_data_angle, 'g')
-    # plt.plot(machine_3.required_data_time, machine_3.required_data_angle, 'b')
-    # plt.plot(machine_4.required_data_time, machine_4.required_data_angle, 'y')
-    # plt.plot(machine_5.required_data_time, machine_5.required_data_angle, 'm')
-    # plt.plot(acc.required_data_time, acc.required_data_angle, 'k')
 
-    # plt.scatter(golden_sensor_1, machine_1.required_data_angle, marker='*', color='r')
-    # plt.show()
-    plt.scatter(golden_sensor_2, machine_2.required_data_angle, marker='*', color='g')
-    # plt.show()
-    # plt.scatter(golden_sensor_3, machine_3.required_data_angle, marker='*', color='b')
-    # plt.show()
-    # plt.scatter(golden_sensor_4, machine_4.required_data_angle, marker='*', color='y')
-    # plt.show()
-    # plt.scatter(golden_sensor_5, machine_5.required_data_angle, marker='*', color='m')
-    # plt.show()
 
-    # plt.plot(golden_sensor_1, fit_1)
-    plt.plot(golden_sensor_2, fit_2)
-    # plt.plot(golden_sensor_3, fit_3)
-    # plt.plot(golden_sensor_4, fit_4)
-    # plt.plot(golden_sensor_5, fit_5)
-
-    plt.show()
-
+###########  test  ###################################################################################
 
 if __name__ == "__main__":
     main()
 
 
+
+
+
+
+
+#########################  some original graph we can plot for reference ##############################################
+
+# plt.plot(machine_1.required_data_time, machine_1.required_data_angle, 'r')
+# plt.plot(machine_2.required_data_time, machine_2.required_data_angle, 'g')
+# plt.plot(machine_3.required_data_time, machine_3.required_data_angle, 'b')
+# plt.plot(machine_4.required_data_time, machine_4.required_data_angle, 'y')
+# plt.plot(machine_5.required_data_time, machine_5.required_data_angle, 'm')
+# plt.plot(acc.required_data_time, acc.required_data_angle, 'k')
+
+# plt.scatter(golden_sensor_1, machine_1.required_data_angle, marker='*', color='r')
+# plt.show()
+# plt.scatter(golden_sensor_2, machine_2.required_data_angle, marker='*', color='g')
+# plt.show()
+# plt.scatter(golden_sensor_3, machine_3.required_data_angle, marker='*', color='b')
+# plt.show()
+# plt.scatter(golden_sensor_4, machine_4.required_data_angle, marker='*', color='y')
+# plt.show()
+# plt.scatter(golden_sensor_5, machine_5.required_data_angle, marker='*', color='m')
+# plt.show()
+
+# plt.plot(golden_sensor_1, fit_1)
+# plt.plot(golden_sensor_2, fit_2)
+# plt.plot(golden_sensor_3, fit_3)
+# plt.plot(golden_sensor_4, fit_4)
+# plt.plot(golden_sensor_5, fit_5)
+
+# plt.show()
