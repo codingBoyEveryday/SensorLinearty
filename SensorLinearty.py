@@ -106,11 +106,12 @@ class SensorLinearty():
     def plot_dot_graph(self, dot_marker = "*", dot_color = 'k'):
         plt.scatter(self.golden_sensor, self.required_data_angle, marker = dot_marker, color = dot_color)
 
-    # def plot_line_graph(self, axis_x, axis_y, line_color = 'k'):
-    #     plt.plot(axis_x, axis_y, color = line_color)
-    #
-    # def plot_dot_graph(self, axis_x, axis_y, dot_marker = "*", dot_color = 'k'):
-    #     plt.scatter(axis_x, axis_y, marker = dot_marker, color = dot_color)
+    def plot_graph_label(self):
+        plt.xlabel("Golden sensor angle")
+        plt.ylabel("Machine sensor angle")
+
+    def save_graph(self, figure_title = "Machine sensor linearty"):
+        plt.savefig(figure_title)
 
     def show_graph(self):
         plt.show()
@@ -165,33 +166,28 @@ def main():
     min_start_time_point = min(machine_1.required_data_time[0], machine_2.required_data_time[0],
                                machine_3.required_data_time[0], machine_4.required_data_time[0],
                                machine_5.required_data_time[0], acc.required_data_time[0])
-
     machine_1.shift_start_time(min_start_time_point)
     machine_2.shift_start_time(min_start_time_point)
     machine_3.shift_start_time(min_start_time_point)
     machine_4.shift_start_time(min_start_time_point)
     machine_5.shift_start_time(min_start_time_point)
     acc.shift_start_time(min_start_time_point)
-
 ####### adjust the start point in angle #################
     min_start_angle_point = min(machine_1.required_data_angle[0], machine_2.required_data_angle[0],
                                machine_3.required_data_angle[0], machine_4.required_data_angle[0],
                                machine_5.required_data_angle[0], acc.required_data_angle[0])
-
     machine_1.shift_start_angle(min_start_angle_point)
     machine_2.shift_start_angle(min_start_angle_point)
     machine_3.shift_start_angle(min_start_angle_point)
     machine_4.shift_start_angle(min_start_angle_point)
     machine_5.shift_start_angle(min_start_angle_point)
     acc.shift_start_angle(min_start_angle_point)
-
 ######################### make golden sensor for machine 1 ###########################
     machine_1.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
     machine_2.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
     machine_3.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
     machine_4.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
     machine_5.make_golden_sensor(acc.required_data_time, acc.required_data_angle)
-
 ######################### make fit function for the plot and calculate the r^2 for machine 1 #################################
     machine_1.make_fit_function()
     machine_2.make_fit_function()
@@ -201,36 +197,9 @@ def main():
 #########################  make graph of each machine sensor and the accelermeter ##############################################
     machine_1.plot_line_graph()
     machine_1.plot_dot_graph(dot_color='g')
+    machine_1.plot_graph_label()
+    machine_1.save_graph()
     machine_1.show_graph()
 ###########  test  ###################################################################################
-
 if __name__ == "__main__":
     main()
-
-#########################  some original graph we can plot for reference ##############################################
-
-# plt.plot(machine_1.required_data_time, machine_1.required_data_angle, 'r')
-# plt.plot(machine_2.required_data_time, machine_2.required_data_angle, 'g')
-# plt.plot(machine_3.required_data_time, machine_3.required_data_angle, 'b')
-# plt.plot(machine_4.required_data_time, machine_4.required_data_angle, 'y')
-# plt.plot(machine_5.required_data_time, machine_5.required_data_angle, 'm')
-# plt.plot(acc.required_data_time, acc.required_data_angle, 'k')
-
-# plt.scatter(golden_sensor_1, machine_1.required_data_angle, marker='*', color='r')
-# plt.show()
-# plt.scatter(golden_sensor_2, machine_2.required_data_angle, marker='*', color='g')
-# plt.show()
-# plt.scatter(golden_sensor_3, machine_3.required_data_angle, marker='*', color='b')
-# plt.show()
-# plt.scatter(golden_sensor_4, machine_4.required_data_angle, marker='*', color='y')
-# plt.show()
-# plt.scatter(golden_sensor_5, machine_5.required_data_angle, marker='*', color='m')
-# plt.show()
-
-# plt.plot(golden_sensor_1, fit_1)
-# plt.plot(golden_sensor_2, fit_2)
-# plt.plot(golden_sensor_3, fit_3)
-# plt.plot(golden_sensor_4, fit_4)
-# plt.plot(golden_sensor_5, fit_5)
-
-# plt.show()
